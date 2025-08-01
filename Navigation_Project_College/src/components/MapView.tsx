@@ -76,7 +76,7 @@ const MapView: React.FC<MapViewProps> = ({ selectedDestination, onLocationUpdate
           fillOpacity: 0.9
         }).addTo(mapInstanceRef.current!).bindPopup('📍 You are here').openPopup();
 
-        // Update progress if navigating
+        // Update progress if navigating (without redrawing the line)
         if (isNavigating && routeCoordinates.length > 0) {
           updateProgressAlongRoute(location);
         }
@@ -253,6 +253,7 @@ const MapView: React.FC<MapViewProps> = ({ selectedDestination, onLocationUpdate
     }
     if (animatedLineRef.current) {
       mapInstanceRef.current.removeLayer(animatedLineRef.current);
+      animatedLineRef.current = null; // Clear the reference
     }
 
     // Create straight line coordinates
@@ -289,7 +290,62 @@ const MapView: React.FC<MapViewProps> = ({ selectedDestination, onLocationUpdate
       duration: 1.0
     });
 
-  }, [selectedDestination, userLocation]);
+  }, [selectedDestination]); // Only depend on selectedDestination, not userLocation
+
+  // Handle initial route creation when both userLocation and destination are available
+  useEffect(() => {
+    if (!mapInstanceRef.current || !userLocation || !selectedDestination) {
+      return;
+    }
+
+    const target = buildings[selectedDestination];
+    if (!target) return;
+
+    // Only create route if it doesn't exist yet
+    if (!animatedLineRef.current) {
+      // Remove existing route layers
+      if (routeLayerRef.current) {
+        mapInstanceRef.current.removeLayer(routeLayerRef.current);
+      }
+      if (animatedLineRef.current) {
+        mapInstanceRef.current.removeLayer(animatedLineRef.current);
+      }
+
+      // Create straight line coordinates
+      const startPoint = L.latLng(userLocation.lat, userLocation.lng);
+      const endPoint = L.latLng(target.lat, target.lng);
+      
+      // Store route coordinates for progress tracking
+      const straightLineCoords = [startPoint, endPoint];
+      setRouteCoordinates(straightLineCoords);
+      
+      // Animate the straight line
+      animateStraightLine(startPoint, endPoint);
+
+      // Enable navigation mode
+      setIsNavigating(true);
+      setProgressPercentage(0);
+
+      // Set a better map view with appropriate zoom level
+      const bounds = L.latLngBounds([startPoint, endPoint]);
+      const center = bounds.getCenter();
+      const distance = startPoint.distanceTo(endPoint);
+      
+      // Calculate appropriate zoom level based on distance
+      let zoomLevel = 18; // Default zoom
+      if (distance > 500) {
+        zoomLevel = 16; // Further zoom out for longer distances
+      } else if (distance > 200) {
+        zoomLevel = 17; // Medium zoom for medium distances
+      }
+      
+      // Set the map view with calculated center and zoom
+      mapInstanceRef.current!.setView(center, zoomLevel, {
+        animate: true,
+        duration: 1.0
+      });
+    }
+  }, [userLocation, selectedDestination]); // This effect handles initial route creation
 
   return (
     <div className="w-full h-full relative">
