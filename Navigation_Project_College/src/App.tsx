@@ -4,6 +4,7 @@ import ControlPanel from './components/ControlPanel';
 import ChatBox, { ChatMessage } from './components/ChatBox';
 import DestinationSelector from './components/DestinationSelector';
 import VoiceBot from './components/VoiceBot';
+import { findDestinationByText } from './utils/voiceCommands';
 
 function App() {
   const [selectedDestination, setSelectedDestination] = useState<string>('');
@@ -34,20 +35,34 @@ function App() {
     setChatMessages(prev => [...prev, userMessage]);
 
     // Handle different types of quick responses with voice feedback
-    if (response.includes('Navigate to')) {
-      // Extract destination from response
-      const destination = response.replace('Navigate to ', '').replace('Show me the ', '').replace('Take me to ', '');
-      handleDestinationChange(destination);
+    if (response.includes('Navigate to') || response.includes('Go to') || response.includes('Take me to') || response.includes('Show me the') || response.includes('Find the') || response.includes('Where is the')) {
+      // Try to find a destination in the response
+      const destinationMatch = findDestinationByText(response);
       
-      // Add voice feedback for navigation
-      const botMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        type: 'bot',
-        content: `Navigating to ${destination}. Please follow the route on the map.`,
-        timestamp: new Date(),
-        language: 'en'
-      };
-      setChatMessages(prev => [...prev, botMessage]);
+      if (destinationMatch && destinationMatch.confidence > 0.3) {
+        // Found a valid destination
+        handleDestinationChange(destinationMatch.key);
+        
+        // Add voice feedback for navigation
+        const botMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          type: 'bot',
+          content: `Navigating to ${destinationMatch.building.name}. Please follow the route on the map.`,
+          timestamp: new Date(),
+          language: 'en'
+        };
+        setChatMessages(prev => [...prev, botMessage]);
+      } else {
+        // No destination found
+        const botMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          type: 'bot',
+          content: 'I couldn\'t find that destination. Please try a different location or use the destination selector.',
+          timestamp: new Date(),
+          language: 'en'
+        };
+        setChatMessages(prev => [...prev, botMessage]);
+      }
     } else if (response === 'yes') {
       // Handle confirmation
       const botMessage: ChatMessage = {
@@ -122,30 +137,32 @@ function App() {
         language: 'en'
       };
       setChatMessages(prev => [...prev, botMessage]);
-    } else if (message.toLowerCase().includes('navigate') || message.toLowerCase().includes('go to') || message.toLowerCase().includes('take me')) {
-      // Extract destination from message
-      const destination = message.replace(/navigate to|go to|take me to/gi, '').trim();
-      if (destination) {
-        handleDestinationChange(destination);
+    } else {
+      // Try to find a destination in the message
+      const destinationMatch = findDestinationByText(message);
+      
+      if (destinationMatch && destinationMatch.confidence > 0.3) {
+        // Found a valid destination
+        handleDestinationChange(destinationMatch.key);
         const botMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
           type: 'bot',
-          content: `I'll help you navigate to ${destination}. Please check the map for the route.`,
+          content: `Navigating to ${destinationMatch.building.name}. Please follow the route on the map.`,
+          timestamp: new Date(),
+          language: 'en'
+        };
+        setChatMessages(prev => [...prev, botMessage]);
+      } else {
+        // No destination found, provide helpful response
+        const botMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          type: 'bot',
+          content: 'I couldn\'t find that destination. Try saying something like "I want to go to Canteen" or "Navigate to CSE Block". You can also use the quick options above.',
           timestamp: new Date(),
           language: 'en'
         };
         setChatMessages(prev => [...prev, botMessage]);
       }
-    } else {
-      // Default response
-      const botMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        type: 'bot',
-        content: 'I understand you said: "' + message + '". How can I help you navigate today? You can ask me to take you anywhere on campus or use the quick options above.',
-        timestamp: new Date(),
-        language: 'en'
-      };
-      setChatMessages(prev => [...prev, botMessage]);
     }
   };
 

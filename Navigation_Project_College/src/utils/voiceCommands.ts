@@ -47,6 +47,9 @@ export const findBestMatch = (query: string): { key: string; building: Building;
   return bestMatch && bestMatch.confidence > 0.3 ? bestMatch : null;
 };
 
+// Alias for findBestMatch to maintain compatibility
+export const findDestinationByText = findBestMatch;
+
 export const extractNavigationCommand = (transcript: string): string | null => {
   const normalized = transcript.toLowerCase();
   
@@ -79,4 +82,16 @@ export const extractNavigationCommand = (transcript: string): string | null => {
   }
   
   return cleanedTranscript || null;
+};
+
+// Function to get quick action suggestions
+export const getQuickActionSuggestions = () => {
+  return [
+    { text: "Navigate to Canteen", action: "Navigate to Canteen" },
+    { text: "Go to CSE Block", action: "Go to CSE Block" },
+    { text: "Take me to Library", action: "Take me to Library" },
+    { text: "Show me the Auditorium", action: "Show me the Auditorium" },
+    { text: "Find the Hostel", action: "Find the Hostel" },
+    { text: "Where is the Temple", action: "Where is the Temple" }
+  ];
 };
