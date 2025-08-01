@@ -20,18 +20,20 @@ const MapView: React.FC<MapViewProps> = ({ selectedDestination, onLocationUpdate
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const userMarkerRef = useRef<L.CircleMarker | null>(null);
-  const routeControlRef = useRef<any>(null);
   const routeLayerRef = useRef<L.Polyline | null>(null);
   const progressMarkerRef = useRef<L.CircleMarker | null>(null);
+  const animatedLineRef = useRef<L.Polyline | null>(null);
   const [userLocation, setUserLocation] = useState<L.LatLng | null>(null);
   const [routeCoordinates, setRouteCoordinates] = useState<L.LatLng[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
   const [progressPercentage, setProgressPercentage] = useState(0);
+  const [isRouteActive, setIsRouteActive] = useState(false);
 
   // Initialize map
   useEffect(() => {
     if (mapRef.current && !mapInstanceRef.current) {
-      mapInstanceRef.current = L.map(mapRef.current).setView([12.192850, 79.083730], 18);
+      // Set initial view to show more of the campus area
+      mapInstanceRef.current = L.map(mapRef.current).setView([12.192850, 79.083730], 17);
       
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 22,
@@ -47,8 +49,8 @@ const MapView: React.FC<MapViewProps> = ({ selectedDestination, onLocationUpdate
 
       // Location handling with high accuracy and continuous updates
       mapInstanceRef.current.locate({ 
-        setView: true, 
-        maxZoom: 18, 
+        setView: false, // Don't automatically set view to user location
+        maxZoom: 17, // Limit max zoom when locating
         watch: true,
         enableHighAccuracy: true,
         maximumAge: 1000, // Update every second
@@ -93,6 +95,86 @@ const MapView: React.FC<MapViewProps> = ({ selectedDestination, onLocationUpdate
     };
   }, [onLocationUpdate]);
 
+  // Function to disable zooming and panning
+  const disableMapControls = () => {
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.dragging.disable();
+      mapInstanceRef.current.touchZoom.disable();
+      mapInstanceRef.current.doubleClickZoom.disable();
+      mapInstanceRef.current.scrollWheelZoom.disable();
+      mapInstanceRef.current.boxZoom.disable();
+      mapInstanceRef.current.keyboard.disable();
+      mapInstanceRef.current.zoomControl.remove();
+    }
+  };
+
+  // Function to enable zooming and panning
+  const enableMapControls = () => {
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.dragging.enable();
+      mapInstanceRef.current.touchZoom.enable();
+      mapInstanceRef.current.doubleClickZoom.enable();
+      mapInstanceRef.current.scrollWheelZoom.enable();
+      mapInstanceRef.current.boxZoom.enable();
+      mapInstanceRef.current.keyboard.enable();
+      mapInstanceRef.current.addControl(L.control.zoom());
+    }
+  };
+
+  // Function to animate straight line path
+  const animateStraightLine = (startPoint: L.LatLng, endPoint: L.LatLng) => {
+    if (!mapInstanceRef.current) return;
+
+    // Remove existing animated line
+    if (animatedLineRef.current) {
+      mapInstanceRef.current.removeLayer(animatedLineRef.current);
+    }
+
+    // Create animated line
+    animatedLineRef.current = L.polyline([], {
+      color: '#3B82F6',
+      weight: 6,
+      opacity: 0.8,
+      smoothFactor: 1
+    }).addTo(mapInstanceRef.current);
+
+    // Animate the line drawing
+    const totalDistance = startPoint.distanceTo(endPoint);
+    const animationDuration = 2000; // 2 seconds
+    const animationSteps = 60;
+    const stepDuration = animationDuration / animationSteps;
+
+    let currentStep = 0;
+
+    const animate = () => {
+      if (currentStep >= animationSteps) {
+        // Animation complete
+        setIsRouteActive(true);
+        disableMapControls();
+        return;
+      }
+
+      const progress = currentStep / animationSteps;
+      const currentDistance = totalDistance * progress;
+      
+      // Calculate current point along the straight line
+      const latDiff = endPoint.lat - startPoint.lat;
+      const lngDiff = endPoint.lng - startPoint.lng;
+      const currentLat = startPoint.lat + (latDiff * progress);
+      const currentLng = startPoint.lng + (lngDiff * progress);
+      
+      const currentPoint = L.latLng(currentLat, currentLng);
+      
+      // Update the animated line
+      animatedLineRef.current!.setLatLngs([startPoint, currentPoint]);
+      
+      currentStep++;
+      setTimeout(animate, stepDuration);
+    };
+
+    animate();
+  };
+
   // Function to update progress along the route
   const updateProgressAlongRoute = (currentLocation: L.LatLng) => {
     if (routeCoordinates.length === 0) return;
@@ -134,8 +216,13 @@ const MapView: React.FC<MapViewProps> = ({ selectedDestination, onLocationUpdate
     if (target && currentLocation.distanceTo(L.latLng(target.lat, target.lng)) < 50) {
       // User has reached destination
       setIsNavigating(false);
+      setIsRouteActive(false);
+      enableMapControls();
       if (progressMarkerRef.current) {
         mapInstanceRef.current!.removeLayer(progressMarkerRef.current);
+      }
+      if (animatedLineRef.current) {
+        mapInstanceRef.current!.removeLayer(animatedLineRef.current);
       }
     }
   };
@@ -148,67 +235,59 @@ const MapView: React.FC<MapViewProps> = ({ selectedDestination, onLocationUpdate
         mapInstanceRef.current?.removeLayer(routeLayerRef.current);
         routeLayerRef.current = null;
       }
+      if (animatedLineRef.current) {
+        mapInstanceRef.current?.removeLayer(animatedLineRef.current);
+        animatedLineRef.current = null;
+      }
+      setIsRouteActive(false);
+      enableMapControls();
       return;
     }
 
     const target = buildings[selectedDestination];
     if (!target) return;
 
-    // Remove existing route layer
+    // Remove existing route layers
     if (routeLayerRef.current) {
       mapInstanceRef.current.removeLayer(routeLayerRef.current);
     }
+    if (animatedLineRef.current) {
+      mapInstanceRef.current.removeLayer(animatedLineRef.current);
+    }
 
-    // Create route using OSRM API directly
-    const startCoord = `${userLocation.lng},${userLocation.lat}`;
-    const endCoord = `${target.lng},${target.lat}`;
-    const routeUrl = `https://router.project-osrm.org/route/v1/driving/${startCoord};${endCoord}?overview=full&geometries=geojson`;
+    // Create straight line coordinates
+    const startPoint = L.latLng(userLocation.lat, userLocation.lng);
+    const endPoint = L.latLng(target.lat, target.lng);
+    
+    // Store route coordinates for progress tracking
+    const straightLineCoords = [startPoint, endPoint];
+    setRouteCoordinates(straightLineCoords);
+    
+    // Animate the straight line
+    animateStraightLine(startPoint, endPoint);
 
-    fetch(routeUrl)
-      .then(response => response.json())
-      .then(data => {
-        if (data.routes && data.routes.length > 0) {
-          const route = data.routes[0];
-          const coordinates = route.geometry.coordinates.map((coord: [number, number]) => [coord[1], coord[0]]);
-          
-          // Store route coordinates for progress tracking
-          const routeLatLngs = coordinates.map((coord: [number, number]) => L.latLng(coord[0], coord[1]));
-          setRouteCoordinates(routeLatLngs);
-          
-          // Create polyline for the route
-          routeLayerRef.current = L.polyline(coordinates, {
-            color: '#3B82F6',
-            weight: 6,
-            opacity: 0.8,
-            smoothFactor: 1
-          }).addTo(mapInstanceRef.current!);
+    // Enable navigation mode
+    setIsNavigating(true);
+    setProgressPercentage(0);
 
-          // Enable navigation mode
-          setIsNavigating(true);
-          setProgressPercentage(0);
-
-          // Fit map to show the entire route
-          const group = new L.FeatureGroup([
-            L.marker([userLocation.lat, userLocation.lng]),
-            L.marker([target.lat, target.lng]),
-            routeLayerRef.current
-          ]);
-          mapInstanceRef.current!.fitBounds(group.getBounds(), { padding: [20, 20] });
-        }
-      })
-      .catch(error => {
-        console.error('Error fetching route:', error);
-        // Fallback: draw straight line
-        routeLayerRef.current = L.polyline([
-          [userLocation.lat, userLocation.lng],
-          [target.lat, target.lng]
-        ], {
-          color: '#3B82F6',
-          weight: 4,
-          opacity: 0.6,
-          dashArray: '10, 10'
-        }).addTo(mapInstanceRef.current!);
-      });
+    // Set a better map view with appropriate zoom level
+    const bounds = L.latLngBounds([startPoint, endPoint]);
+    const center = bounds.getCenter();
+    const distance = startPoint.distanceTo(endPoint);
+    
+    // Calculate appropriate zoom level based on distance
+    let zoomLevel = 18; // Default zoom
+    if (distance > 500) {
+      zoomLevel = 16; // Further zoom out for longer distances
+    } else if (distance > 200) {
+      zoomLevel = 17; // Medium zoom for medium distances
+    }
+    
+    // Set the map view with calculated center and zoom
+    mapInstanceRef.current!.setView(center, zoomLevel, {
+      animate: true,
+      duration: 1.0
+    });
 
   }, [selectedDestination, userLocation]);
 
@@ -241,6 +320,17 @@ const MapView: React.FC<MapViewProps> = ({ selectedDestination, onLocationUpdate
             <div className="truncate">Destination: {buildings[selectedDestination]?.name}</div>
             <div>Status: {progressPercentage >= 100 ? 'Arrived!' : 'Navigating...'}</div>
           </div>
+        </div>
+      )}
+
+      {/* Route Active Indicator */}
+      {isRouteActive && (
+        <div className="absolute top-2 md:top-4 right-2 md:right-4 bg-blue-500 text-white rounded-lg shadow-lg p-2 md:p-3 z-10">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+            <span className="text-xs md:text-sm font-semibold">Route Active</span>
+          </div>
+          <div className="text-xs opacity-90">Zoom disabled</div>
         </div>
       )}
     </div>
