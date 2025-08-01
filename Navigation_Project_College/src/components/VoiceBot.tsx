@@ -166,10 +166,10 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ onDestinationSelect, onMessageAdd, 
       {/* Language Toggle */}
       <div className="flex items-center gap-2 mb-3 p-2 bg-gray-50 rounded-lg">
         <Languages size={16} className="text-gray-600" />
-        <span className="text-sm text-gray-600">Language:</span>
+        <span className="text-xs md:text-sm text-gray-600">Language:</span>
         <button
           onClick={() => setLanguage('en')}
-          className={`px-3 py-1 text-xs rounded-md transition-colors ${
+          className={`px-2 md:px-3 py-1 text-xs rounded-md transition-colors ${
             language === 'en' 
               ? 'bg-blue-500 text-white' 
               : 'bg-white text-gray-600 hover:bg-gray-100'
@@ -179,7 +179,7 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ onDestinationSelect, onMessageAdd, 
         </button>
         <button
           onClick={() => setLanguage('ta')}
-          className={`px-3 py-1 text-xs rounded-md transition-colors ${
+          className={`px-2 md:px-3 py-1 text-xs rounded-md transition-colors ${
             language === 'ta' 
               ? 'bg-blue-500 text-white' 
               : 'bg-white text-gray-600 hover:bg-gray-100'
@@ -192,10 +192,10 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ onDestinationSelect, onMessageAdd, 
       {/* Mic Mode Toggle */}
       <div className="flex items-center gap-2 mb-3 p-2 bg-gray-50 rounded-lg">
         <Settings size={16} className="text-gray-600" />
-        <span className="text-sm text-gray-600">Mic Mode:</span>
+        <span className="text-xs md:text-sm text-gray-600">Mic Mode:</span>
         <button
           onClick={() => setMicMode('auto')}
-          className={`px-3 py-1 text-xs rounded-md transition-colors ${
+          className={`px-2 md:px-3 py-1 text-xs rounded-md transition-colors ${
             micMode === 'auto' 
               ? 'bg-blue-500 text-white' 
               : 'bg-white text-gray-600 hover:bg-gray-100'
@@ -205,7 +205,7 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ onDestinationSelect, onMessageAdd, 
         </button>
         <button
           onClick={() => setMicMode('manual')}
-          className={`px-3 py-1 text-xs rounded-md transition-colors ${
+          className={`px-2 md:px-3 py-1 text-xs rounded-md transition-colors ${
             micMode === 'manual' 
               ? 'bg-blue-500 text-white' 
               : 'bg-white text-gray-600 hover:bg-gray-100'
@@ -215,19 +215,21 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ onDestinationSelect, onMessageAdd, 
         </button>
       </div>
 
-      <div className="flex items-center gap-2 mb-2">
+      <div className="flex flex-col md:flex-row items-center gap-2 mb-2">
         {/* Auto Mic Button */}
         {micMode === 'auto' && (
           <button
             onClick={handleAutoMicClick}
-            className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all shadow-sm ${
+            className={`flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 rounded-lg font-medium transition-all shadow-sm text-sm ${
               isListening
                 ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
                 : 'bg-blue-500 hover:bg-blue-600 text-white hover:shadow-md'
             }`}
           >
             {isListening ? <MicOff size={16} /> : <Mic size={16} />}
-            {isListening ? messages[language].stopListening : messages[language].startListening}
+            <span className="hidden sm:inline">
+              {isListening ? messages[language].stopListening : messages[language].startListening}
+            </span>
           </button>
         )}
 
@@ -235,20 +237,22 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ onDestinationSelect, onMessageAdd, 
         {micMode === 'manual' && (
           <button
             onClick={handleManualMicToggle}
-            className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all shadow-sm ${
+            className={`flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 rounded-lg font-medium transition-all shadow-sm text-sm ${
               isManualListening
                 ? 'bg-green-500 hover:bg-green-600 text-white animate-pulse'
                 : 'bg-purple-500 hover:bg-purple-600 text-white hover:shadow-md'
             }`}
           >
             {isManualListening ? <MicOff size={16} /> : <Mic2 size={16} />}
-            {isManualListening ? 'Stop Manual' : 'Start Manual'}
+            <span className="hidden sm:inline">
+              {isManualListening ? 'Stop Manual' : 'Start Manual'}
+            </span>
           </button>
         )}
         
         <button
           onClick={() => speak(messages[language].helpMessage, { lang: language })}
-          className="flex items-center gap-2 px-3 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors shadow-sm hover:shadow-md"
+          className="flex items-center gap-2 px-3 py-2 md:py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors shadow-sm hover:shadow-md"
           title="Voice help"
         >
           <Volume2 size={16} />

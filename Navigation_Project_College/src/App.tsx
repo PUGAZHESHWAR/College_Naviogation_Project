@@ -147,68 +147,120 @@ function App() {
     }
   };
 
-  return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Left Sidebar - Control Panel */}
-      <div className="w-80 bg-white shadow-lg z-10 flex-shrink-0 border-r border-gray-200">
-        <ControlPanel
-          selectedDestination={selectedDestination}
-          onDestinationChange={handleDestinationChange}
-          onMessageAdd={handleMessageAdd}
-          className="h-full"
-        />
-      </div>
-      
-      {/* Main Content Area - Map and Chat */}
-      <div className="flex-1 flex">
-        {/* Map Container */}
-        <div className="flex-1 relative">
-          <MapView selectedDestination={selectedDestination} />
-          
-          {/* Mobile Toggle Button */}
-          <button className="md:hidden absolute top-4 left-4 bg-white p-2 rounded-lg shadow-lg z-10">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Right Side - ChatBox Container */}
-        <div className="w-96 bg-white shadow-lg z-10 flex-shrink-0 border-l border-gray-200">
-                  <ChatBox
-          messages={chatMessages}
-          isVisible={true}
-          onToggleVisibility={handleChatToggle}
-          onQuickResponse={handleQuickResponse}
-          onSendMessage={handleSendMessage}
-          className="h-full"
-        />
-        </div>
-      </div>
-
-      {/* Mobile Overlay for smaller screens */}
-      <div className="md:hidden absolute inset-0 flex flex-col">
-        <div className="h-1/2 bg-white border-b border-gray-200">
+    return (
+    <div className="flex flex-col md:flex-row h-screen bg-gray-100">
+      {/* Desktop Layout */}
+      <div className="hidden md:flex w-full h-full">
+        {/* Left Sidebar - Control Panel */}
+        <div className="w-80 bg-white shadow-lg z-10 flex-shrink-0 border-r border-gray-200">
           <ControlPanel
             selectedDestination={selectedDestination}
             onDestinationChange={handleDestinationChange}
             onMessageAdd={handleMessageAdd}
-            className="h-full p-4"
+            className="h-full"
           />
         </div>
-        <div className="h-1/2 relative">
-          <MapView selectedDestination={selectedDestination} />
-          {/* Mobile ChatBox */}
-          <div className="absolute bottom-4 right-4 z-20">
-                      <ChatBox
-            messages={chatMessages}
-            isVisible={isChatVisible}
-            onToggleVisibility={handleChatToggle}
-            onQuickResponse={handleQuickResponse}
-            onSendMessage={handleSendMessage}
-          />
+        
+        {/* Main Content Area - Map and Chat */}
+        <div className="flex-1 flex">
+          {/* Map Container */}
+          <div className="flex-1 relative">
+            <MapView selectedDestination={selectedDestination} />
+          </div>
+
+          {/* Right Side - ChatBox Container */}
+          <div className="w-96 bg-white shadow-lg z-10 flex-shrink-0 border-l border-gray-200">
+            <ChatBox
+              messages={chatMessages}
+              isVisible={true}
+              onToggleVisibility={handleChatToggle}
+              onQuickResponse={handleQuickResponse}
+              onSendMessage={handleSendMessage}
+              className="h-full"
+            />
           </div>
         </div>
+      </div>
+
+      {/* Mobile Layout */}
+      <div className="md:hidden flex flex-col h-full">
+        {/* Mobile Header */}
+        <div className="bg-white shadow-sm border-b border-gray-200 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m-6 3l6-3" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gray-800">Campus Navigator</h1>
+                <p className="text-xs text-gray-600">Voice-powered navigation</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setIsChatVisible(!isChatVisible)}
+              className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Content */}
+        <div className="flex-1 flex">
+          {/* Control Panel - Collapsible */}
+          <div className="w-full bg-white">
+            <ControlPanel
+              selectedDestination={selectedDestination}
+              onDestinationChange={handleDestinationChange}
+              onMessageAdd={handleMessageAdd}
+              className="h-full p-4"
+            />
+          </div>
+        </div>
+
+        {/* Mobile Map */}
+        <div className="h-48 relative">
+          <MapView selectedDestination={selectedDestination} />
+        </div>
+
+        {/* Mobile ChatBox - Fixed under map */}
+        {isChatVisible && (
+          <div className="h-[500px] bg-white border-t border-gray-200 shadow-lg">
+            {/* Mobile Chat Header */}
+            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-3 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  <span className="font-semibold text-sm">Navigation Assistant</span>
+                </div>
+                <button 
+                  onClick={handleChatToggle}
+                  className="p-1 hover:bg-white hover:bg-opacity-20 rounded transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="h-full">
+              <ChatBox
+                messages={chatMessages}
+                isVisible={true}
+                onToggleVisibility={handleChatToggle}
+                onQuickResponse={handleQuickResponse}
+                onSendMessage={handleSendMessage}
+                className="h-full"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Instructions */}

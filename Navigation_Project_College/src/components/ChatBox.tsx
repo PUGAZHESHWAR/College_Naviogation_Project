@@ -240,7 +240,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 
       {/* Messages */}
       {!isMinimized && (
-        <div className={`${className.includes('h-full') ? 'flex-1' : 'h-64'} overflow-y-auto p-4 space-y-3`}>
+        <div className={`${className.includes('h-full') ? 'flex-1' : 'h-64'} overflow-y-auto p-4 space-y-3 min-h-[300px]`}>
           {messages.length === 0 ? (
             <div className="text-center text-gray-500 py-12">
               <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -310,21 +310,21 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 
       {/* Chat Options */}
       {!isMinimized && (
-        <div className="border-t border-gray-200 bg-gray-50 p-4">
-          <div className="flex items-center gap-2 mb-3">
+        <div className="border-t border-gray-200 bg-gray-50 p-2">
+          <div className="flex items-center gap-2 mb-2">
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
             <span className="text-xs font-medium text-gray-600">Quick Options</span>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-1">
             {getChatOptions().map((option, index) => {
               const IconComponent = option.icon;
               return (
                 <button
                   key={index}
                   onClick={() => handleQuickResponse(option.action)}
-                  className="flex items-center gap-2 p-3 bg-white border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 text-left"
+                  className="flex items-center gap-1 p-1.5 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 text-left"
                 >
-                  <IconComponent size={16} className="text-blue-600 flex-shrink-0" />
+                  <IconComponent size={12} className="text-blue-600 flex-shrink-0" />
                   <span className="text-xs font-medium text-gray-700 truncate">
                     {option.text}
                   </span>
@@ -337,9 +337,9 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 
       {/* Chat Input Area */}
       {!isMinimized && (
-        <div className="border-t border-gray-200 bg-white p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Smile size={16} className="text-gray-500" />
+        <div className="border-t border-gray-200 bg-white p-2">
+          <div className="flex items-center gap-2 mb-2">
+            <Smile size={14} className="text-gray-500" />
             <span className="text-xs font-medium text-gray-600">Chat with Assistant</span>
           </div>
           
@@ -350,7 +350,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
                 onSendMessage(getRandomSampleResponse());
               }
             }}
-            className="w-full mb-3 p-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-all duration-200 text-center"
+            className="w-full mb-2 p-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-all duration-200 text-center"
           >
             <span className="text-xs font-medium text-blue-700">💬 Say "Hi" to get started</span>
           </button>
@@ -363,14 +363,14 @@ const ChatBox: React.FC<ChatBoxProps> = ({
               onChange={(e) => setChatInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type your message..."
-              className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <button
               onClick={handleSendMessage}
               disabled={!chatInput.trim()}
-              className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200"
+              className="p-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200"
             >
-              <Send size={16} />
+              <Send size={14} />
             </button>
           </div>
         </div>
