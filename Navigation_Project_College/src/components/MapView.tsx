@@ -28,6 +28,7 @@ const MapView: React.FC<MapViewProps> = ({ selectedDestination, onLocationUpdate
   const [isNavigating, setIsNavigating] = useState(false);
   const [progressPercentage, setProgressPercentage] = useState(0);
   const [isRouteActive, setIsRouteActive] = useState(false);
+  const [hasShownLocationPopup, setHasShownLocationPopup] = useState(false);
 
   // Initialize map
   useEffect(() => {
@@ -74,7 +75,13 @@ const MapView: React.FC<MapViewProps> = ({ selectedDestination, onLocationUpdate
           weight: 3,
           opacity: 1,
           fillOpacity: 0.9
-        }).addTo(mapInstanceRef.current!).bindPopup('📍 You are here').openPopup();
+        }).addTo(mapInstanceRef.current!).bindPopup('📍 You are here');
+
+        // Only show popup once
+        if (!hasShownLocationPopup) {
+          userMarkerRef.current.openPopup();
+          setHasShownLocationPopup(true);
+        }
 
         // Update progress if navigating (without redrawing the line)
         if (isNavigating && routeCoordinates.length > 0) {
@@ -104,7 +111,7 @@ const MapView: React.FC<MapViewProps> = ({ selectedDestination, onLocationUpdate
       mapInstanceRef.current.scrollWheelZoom.disable();
       mapInstanceRef.current.boxZoom.disable();
       mapInstanceRef.current.keyboard.disable();
-      mapInstanceRef.current.zoomControl.remove();
+      // Don't remove zoom control, just disable interactions
     }
   };
 
@@ -117,7 +124,7 @@ const MapView: React.FC<MapViewProps> = ({ selectedDestination, onLocationUpdate
       mapInstanceRef.current.scrollWheelZoom.enable();
       mapInstanceRef.current.boxZoom.enable();
       mapInstanceRef.current.keyboard.enable();
-      mapInstanceRef.current.addControl(L.control.zoom());
+      // Zoom control is already added by default
     }
   };
 
@@ -246,6 +253,9 @@ const MapView: React.FC<MapViewProps> = ({ selectedDestination, onLocationUpdate
 
     const target = buildings[selectedDestination];
     if (!target) return;
+
+    // Reset popup state for new navigation
+    setHasShownLocationPopup(false);
 
     // Remove existing route layers
     if (routeLayerRef.current) {
