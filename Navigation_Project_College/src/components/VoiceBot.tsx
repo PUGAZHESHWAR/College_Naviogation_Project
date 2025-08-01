@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
-import { Mic, MicOff, Volume2, Languages } from 'lucide-react';
+import { Mic, MicOff, Volume2, Languages, Mic2, Settings } from 'lucide-react';
 import { useVoiceRecognition } from '../hooks/useVoiceRecognition';
 import { useSpeechSynthesis } from '../hooks/useSpeechSynthesis';
 import { findBestMatch, extractNavigationCommand } from '../utils/voiceCommands';
+import { ChatMessage } from './ChatBox';
 
 interface VoiceBotProps {
   onDestinationSelect: (destination: string) => void;
+  onMessageAdd: (message: ChatMessage) => void;
   className?: string;
 }
 
-const VoiceBot: React.FC<VoiceBotProps> = ({ onDestinationSelect, className = '' }) => {
+const VoiceBot: React.FC<VoiceBotProps> = ({ onDestinationSelect, onMessageAdd, className = '' }) => {
   const [feedback, setFeedback] = useState<string>('');
   const [language, setLanguage] = useState<'en' | 'ta'>('en');
+  const [micMode, setMicMode] = useState<'auto' | 'manual'>('auto');
+  const [isManualListening, setIsManualListening] = useState(false);
   const { speak } = useSpeechSynthesis();
 
   const messages = {
@@ -42,6 +46,14 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ onDestinationSelect, className = ''
   };
 
   const handleVoiceResult = (transcript: string) => {
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      type: 'user',
+      content: transcript,
+      timestamp: new Date(),
+      language
+    };
+    onMessageAdd(userMessage);
     setFeedback(`You said: "${transcript}"`);
     
     const command = extractNavigationCommand(transcript);
@@ -50,24 +62,69 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ onDestinationSelect, className = ''
       
       if (match) {
         if (match.confidence > 0.7) {
+          const botMessage: ChatMessage = {
+            id: (Date.now() + 1).toString(),
+            type: 'bot',
+            content: `${messages[language].navigating} ${match.building.name}`,
+            timestamp: new Date(),
+            language
+          };
+          onMessageAdd(botMessage);
           speak(`${messages[language].navigating} ${match.building.name}`, { lang: language });
           setFeedback(`✓ ${messages[language].navigating} ${match.building.name}`);
           onDestinationSelect(match.key);
+          
+          // Auto mode: stop listening after successful command
+          if (micMode === 'auto') {
+            stopListening();
+          }
         } else {
+          const botMessage: ChatMessage = {
+            id: (Date.now() + 1).toString(),
+            type: 'bot',
+            content: `${messages[language].didYouMean} ${match.building.name}?`,
+            timestamp: new Date(),
+            language
+          };
+          onMessageAdd(botMessage);
           speak(`${messages[language].didYouMean} ${match.building.name}?`, { lang: language });
           setFeedback(`${messages[language].didYouMean} ${match.building.name}? Say "yes" to confirm.`);
         }
       } else {
+        const botMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          type: 'bot',
+          content: messages[language].locationNotFound,
+          timestamp: new Date(),
+          language
+        };
+        onMessageAdd(botMessage);
         speak(messages[language].locationNotFound, { lang: language });
         setFeedback(messages[language].tryAgain);
       }
     } else {
+      const botMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        type: 'bot',
+        content: messages[language].helpMessage,
+        timestamp: new Date(),
+        language
+      };
+      onMessageAdd(botMessage);
       speak(messages[language].helpMessage, { lang: language });
       setFeedback(messages[language].helpFeedback);
     }
   };
 
   const handleVoiceError = (error: string) => {
+    const botMessage: ChatMessage = {
+      id: Date.now().toString(),
+      type: 'bot',
+      content: `Voice error: ${error}`,
+      timestamp: new Date(),
+      language
+    };
+    onMessageAdd(botMessage);
     setFeedback(`Voice error: ${error}`);
     speak(messages[language].voiceError, { lang: language });
   };
@@ -77,6 +134,24 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ onDestinationSelect, className = ''
     onError: handleVoiceError,
     language: language === 'en' ? 'en-US' : 'ta-IN'
   });
+
+  const handleManualMicToggle = () => {
+    if (isManualListening) {
+      setIsManualListening(false);
+      stopListening();
+    } else {
+      setIsManualListening(true);
+      startListening();
+    }
+  };
+
+  const handleAutoMicClick = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  };
 
   if (!isSupported) {
     return (
@@ -114,18 +189,62 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ onDestinationSelect, className = ''
         </button>
       </div>
 
-      <div className="flex items-center gap-2 mb-2">
+      {/* Mic Mode Toggle */}
+      <div className="flex items-center gap-2 mb-3 p-2 bg-gray-50 rounded-lg">
+        <Settings size={16} className="text-gray-600" />
+        <span className="text-sm text-gray-600">Mic Mode:</span>
         <button
-          onClick={isListening ? stopListening : startListening}
-          className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all shadow-sm ${
-            isListening
-              ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
-              : 'bg-blue-500 hover:bg-blue-600 text-white hover:shadow-md'
+          onClick={() => setMicMode('auto')}
+          className={`px-3 py-1 text-xs rounded-md transition-colors ${
+            micMode === 'auto' 
+              ? 'bg-blue-500 text-white' 
+              : 'bg-white text-gray-600 hover:bg-gray-100'
           }`}
         >
-          {isListening ? <MicOff size={16} /> : <Mic size={16} />}
-          {isListening ? messages[language].stopListening : messages[language].startListening}
+          Auto
         </button>
+        <button
+          onClick={() => setMicMode('manual')}
+          className={`px-3 py-1 text-xs rounded-md transition-colors ${
+            micMode === 'manual' 
+              ? 'bg-blue-500 text-white' 
+              : 'bg-white text-gray-600 hover:bg-gray-100'
+          }`}
+        >
+          Manual
+        </button>
+      </div>
+
+      <div className="flex items-center gap-2 mb-2">
+        {/* Auto Mic Button */}
+        {micMode === 'auto' && (
+          <button
+            onClick={handleAutoMicClick}
+            className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all shadow-sm ${
+              isListening
+                ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
+                : 'bg-blue-500 hover:bg-blue-600 text-white hover:shadow-md'
+            }`}
+          >
+            {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+            {isListening ? messages[language].stopListening : messages[language].startListening}
+          </button>
+        )}
+
+        {/* Manual Mic Button */}
+        {micMode === 'manual' && (
+          <button
+            onClick={handleManualMicToggle}
+            className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all shadow-sm ${
+              isManualListening
+                ? 'bg-green-500 hover:bg-green-600 text-white animate-pulse'
+                : 'bg-purple-500 hover:bg-purple-600 text-white hover:shadow-md'
+            }`}
+          >
+            {isManualListening ? <MicOff size={16} /> : <Mic2 size={16} />}
+            {isManualListening ? 'Stop Manual' : 'Start Manual'}
+          </button>
+        )}
         
         <button
           onClick={() => speak(messages[language].helpMessage, { lang: language })}
@@ -148,10 +267,23 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ onDestinationSelect, className = ''
         </div>
       )}
       
-      {isListening && (
-        <div className="flex items-center gap-2 mt-3 text-sm text-red-600 bg-red-50 p-2 rounded-lg border border-red-200">
-          <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-          <span className="font-medium">{messages[language].listening}</span>
+      {(isListening || isManualListening) && (
+        <div className={`flex items-center gap-2 mt-3 text-sm p-2 rounded-lg border ${
+          micMode === 'auto' 
+            ? 'text-red-600 bg-red-50 border-red-200' 
+            : 'text-green-600 bg-green-50 border-green-200'
+        }`}>
+          <div className={`w-3 h-3 rounded-full animate-pulse ${
+            micMode === 'auto' ? 'bg-red-500' : 'bg-green-500'
+          }`}></div>
+          <span className="font-medium">
+            {micMode === 'auto' ? messages[language].listening : 'Manual listening active'}
+          </span>
+          <span className={`text-xs ${
+            micMode === 'auto' ? 'text-red-500' : 'text-green-500'
+          }`}>
+            {micMode === 'auto' ? 'Speak now...' : 'Continuous listening...'}
+          </span>
         </div>
       )}
     </div>

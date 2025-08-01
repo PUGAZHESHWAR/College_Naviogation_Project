@@ -2,16 +2,19 @@ import React from 'react';
 import { MapPin, Navigation, Bot } from 'lucide-react';
 import DestinationSelector from './DestinationSelector';
 import VoiceBot from './VoiceBot';
+import { ChatMessage } from './ChatBox';
 
 interface ControlPanelProps {
   selectedDestination: string;
   onDestinationChange: (destination: string) => void;
+  onMessageAdd: (message: ChatMessage) => void;
   className?: string;
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({
   selectedDestination,
   onDestinationChange,
+  onMessageAdd,
   className = ''
 }) => {
   return (
@@ -54,7 +57,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             <Navigation size={16} />
             Voice Assistant
           </label>
-          <VoiceBot onDestinationSelect={onDestinationChange} />
+          <VoiceBot onDestinationSelect={onDestinationChange} onMessageAdd={onMessageAdd} />
         </div>
 
         {/* Quick Tips */}
