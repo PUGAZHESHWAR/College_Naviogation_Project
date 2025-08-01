@@ -104,11 +104,12 @@ function App() {
       };
       setChatMessages(prev => [...prev, botMessage]);
     } else if (response.includes('Cancel navigation')) {
-      // Handle navigation cancellation
+      // Handle navigation cancellation - clear destination and path
+      setSelectedDestination(''); // Clear the selected destination
       const botMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         type: 'bot',
-        content: 'Navigation cancelled. You can start a new navigation by selecting a destination or using voice commands.',
+        content: 'Navigation cancelled. Destination cleared. You can start a new navigation by selecting a destination or using voice commands.',
         timestamp: new Date(),
         language: 'en'
       };
@@ -133,6 +134,17 @@ function App() {
         id: (Date.now() + 1).toString(),
         type: 'bot',
         content: 'Hello! I\'m your navigation assistant. I can help you find any building on campus. Just tell me where you want to go or use the quick options above!',
+        timestamp: new Date(),
+        language: 'en'
+      };
+      setChatMessages(prev => [...prev, botMessage]);
+    } else if (message.toLowerCase().includes('cancel') && message.toLowerCase().includes('navigation')) {
+      // Handle cancel navigation through text input
+      setSelectedDestination(''); // Clear the selected destination
+      const botMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        type: 'bot',
+        content: 'Navigation cancelled. Destination cleared. You can start a new navigation by selecting a destination or using voice commands.',
         timestamp: new Date(),
         language: 'en'
       };
@@ -304,7 +316,7 @@ function App() {
         <div className="bg-black bg-opacity-75 text-white text-xs p-2 rounded-lg">
           <h4 className="font-semibold mb-1">Voice Commands:</h4>
           <ul className="text-xs space-y-1">
-            <li>• "Navigate to CSE Block"</li>
+            <li>• "Navigate to Gate"</li>
             <li>• "Take me to canteen"</li>
             <li>• "Show me the library"</li>
           </ul>

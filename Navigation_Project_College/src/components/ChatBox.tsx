@@ -81,7 +81,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
     
     if (!lastMessage) {
       return [
-        { text: "Navigate to CSE Block", icon: Navigation, action: "Navigate to CSE Block" },
+        { text: "Navigate to Gate", icon: Navigation, action: "Navigate to Gate" },
         { text: "Show me the library", icon: MapPin, action: "Show me the library" },
         { text: "Take me to canteen", icon: Navigation, action: "Take me to canteen" },
         { text: "Help with navigation", icon: HelpCircle, action: "Help with navigation" }
@@ -104,7 +104,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
       lastMessage.content.includes('try again')
     )) {
       return [
-        { text: "Try CSE Block", icon: Navigation, action: "Navigate to CSE Block" },
+        { text: "Try CSE Block", icon: Navigation, action: "Navigate to CSE" },
         { text: "Try Library", icon: MapPin, action: "Show me the library" },
         { text: "Try Canteen", icon: Navigation, action: "Take me to canteen" },
         { text: "Help me", icon: HelpCircle, action: "Help with navigation" }

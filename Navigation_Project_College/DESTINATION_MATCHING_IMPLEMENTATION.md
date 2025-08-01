@@ -84,4 +84,25 @@ canteen: {
 4. **If not found**: Helpful suggestion message is shown
 5. **Chat history** is updated with both user message and bot response
 
-This implementation provides a seamless, natural language interface for campus navigation! 
+## Cancel Navigation Feature
+
+### How to Cancel Navigation:
+1. **Click "Cancel navigation"** in the chat quick options
+2. **Type "cancel navigation"** in the text input box
+3. **Use voice command** "cancel navigation"
+
+### What Happens When Cancelled:
+- ✅ **Destination is cleared** - `selectedDestination` set to empty string
+- ✅ **Route path is removed** - Map clears the blue navigation line
+- ✅ **Destination selector resets** - Shows "Select Destination"
+- ✅ **Confirmation box disappears** - Green destination confirmation removed
+- ✅ **Bot responds** - Shows cancellation confirmation message
+- ✅ **Map controls re-enabled** - User can interact with map normally
+
+### Example Cancel Messages:
+- "Cancel navigation"
+- "cancel navigation" 
+- "I want to cancel navigation"
+- "Please cancel navigation"
+
+This implementation provides a seamless, natural language interface for campus navigation with full cancel functionality! 
