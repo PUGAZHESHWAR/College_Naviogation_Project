@@ -27,7 +27,7 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ onDestinationSelect, onMessageAdd, 
       helpMessage: 'Please say where you want to go, for example: Navigate to CSE Block',
       helpFeedback: 'Try saying "Navigate to [destination name]"',
       voiceError: 'Sorry, I could not understand you. Please try again.',
-      startListening: 'Start Voice Command',
+      startListening: 'Voice Command',
       stopListening: 'Stop Listening',
       listening: 'Listening for your command...'
     },
@@ -215,19 +215,19 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ onDestinationSelect, onMessageAdd, 
         </button>
       </div>
 
-      <div className="flex flex-col md:flex-row items-center gap-2 mb-2">
+      <div className="flex flex-col sm:flex-row items-center gap-2 mb-2 w-full">
         {/* Auto Mic Button */}
         {micMode === 'auto' && (
           <button
             onClick={handleAutoMicClick}
-            className={`flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 rounded-lg font-medium transition-all shadow-sm text-sm ${
+            className={`flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-3 rounded-lg font-medium transition-all shadow-sm text-sm w-full sm:w-auto ${
               isListening
                 ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
                 : 'bg-blue-500 hover:bg-blue-600 text-white hover:shadow-md'
             }`}
           >
             {isListening ? <MicOff size={16} /> : <Mic size={16} />}
-            <span className="hidden sm:inline">
+            <span className="text-xs sm:text-sm">
               {isListening ? messages[language].stopListening : messages[language].startListening}
             </span>
           </button>
@@ -237,14 +237,14 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ onDestinationSelect, onMessageAdd, 
         {micMode === 'manual' && (
           <button
             onClick={handleManualMicToggle}
-            className={`flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 rounded-lg font-medium transition-all shadow-sm text-sm ${
+            className={`flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-3 rounded-lg font-medium transition-all shadow-sm text-sm w-full sm:w-auto ${
               isManualListening
                 ? 'bg-green-500 hover:bg-green-600 text-white animate-pulse'
                 : 'bg-purple-500 hover:bg-purple-600 text-white hover:shadow-md'
             }`}
           >
             {isManualListening ? <MicOff size={16} /> : <Mic2 size={16} />}
-            <span className="hidden sm:inline">
+            <span className="text-xs sm:text-sm">
               {isManualListening ? 'Stop Manual' : 'Start Manual'}
             </span>
           </button>
@@ -252,15 +252,16 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ onDestinationSelect, onMessageAdd, 
         
         <button
           onClick={() => speak(messages[language].helpMessage, { lang: language })}
-          className="flex items-center gap-2 px-3 py-2 md:py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors shadow-sm hover:shadow-md"
+          className="flex items-center justify-center gap-2 px-3 py-2 md:py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors shadow-sm hover:shadow-md w-full sm:w-auto"
           title="Voice help"
         >
           <Volume2 size={16} />
+          <span className="text-xs sm:text-sm">Help</span>
         </button>
       </div>
       
       {feedback && (
-        <div className={`text-sm p-3 rounded-lg border ${
+        <div className={`text-sm p-3 rounded-lg border w-full ${
           feedback.startsWith('✓') 
             ? 'bg-green-50 text-green-800 border-green-200' 
             : feedback.includes('error') 
@@ -272,22 +273,24 @@ const VoiceBot: React.FC<VoiceBotProps> = ({ onDestinationSelect, onMessageAdd, 
       )}
       
       {(isListening || isManualListening) && (
-        <div className={`flex items-center gap-2 mt-3 text-sm p-2 rounded-lg border ${
+        <div className={`flex items-center gap-2 mt-3 text-sm p-3 rounded-lg border w-full ${
           micMode === 'auto' 
             ? 'text-red-600 bg-red-50 border-red-200' 
             : 'text-green-600 bg-green-50 border-green-200'
         }`}>
-          <div className={`w-3 h-3 rounded-full animate-pulse ${
+          <div className={`w-3 h-3 rounded-full animate-pulse flex-shrink-0 ${
             micMode === 'auto' ? 'bg-red-500' : 'bg-green-500'
           }`}></div>
-          <span className="font-medium">
-            {micMode === 'auto' ? messages[language].listening : 'Manual listening active'}
-          </span>
-          <span className={`text-xs ${
-            micMode === 'auto' ? 'text-red-500' : 'text-green-500'
-          }`}>
-            {micMode === 'auto' ? 'Speak now...' : 'Continuous listening...'}
-          </span>
+          <div className="flex-1 min-w-0">
+            <span className="font-medium text-xs sm:text-sm">
+              {micMode === 'auto' ? messages[language].listening : 'Manual listening active'}
+            </span>
+            <div className={`text-xs ${
+              micMode === 'auto' ? 'text-red-500' : 'text-green-500'
+            }`}>
+              {micMode === 'auto' ? 'Speak now...' : 'Continuous listening...'}
+            </div>
+          </div>
         </div>
       )}
     </div>

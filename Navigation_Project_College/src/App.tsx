@@ -237,15 +237,13 @@ function App() {
           <MapView selectedDestination={selectedDestination} />
         </div>
 
-        {/* Voice Controls - Floating */}
-        <div className="absolute bottom-4 right-4 z-10">
-          <div className="bg-white rounded-lg shadow-lg p-3 border border-gray-200">
-            <VoiceBot 
-              onDestinationSelect={handleDestinationChange} 
-              onMessageAdd={handleMessageAdd}
-              className=""
-            />
-          </div>
+        {/* Voice Controls - Full Width Bottom Section */}
+        <div className="bg-white border-t border-gray-200 p-4 w-full">
+          <VoiceBot 
+            onDestinationSelect={handleDestinationChange} 
+            onMessageAdd={handleMessageAdd}
+            className="w-full"
+          />
         </div>
 
         {/* ChatBox - Stacked under map */}
