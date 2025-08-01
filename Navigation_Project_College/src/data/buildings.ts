@@ -20,74 +20,74 @@ export const buildings: Record<string, Building> = {
   },
   gateway: { 
     name: "Arunai Gateway", 
-    lat: 12.192430, 
-    lng: 79.083276,
+    lat: 12.192414, 
+    lng: 79.083265,
     keywords: ["gateway", "arunai gateway"]
   },
   acaudi: { 
     name: "AC Auditorium", 
-    lat: 12.192780, 
-    lng: 79.083910,
+    lat: 12.192382, 
+    lng: 79.083698,
     keywords: ["ac auditorium", "auditorium", "ac audi", "hall"]
   },
   canteen: { 
     name: "Arunai Canteen", 
-    lat: 12.192400, 
-    lng: 79.084100,
+    lat: 12.192030, 
+    lng: 79.083649,
     keywords: ["canteen", "food", "dining", "cafeteria"]
   },
   hostel1: { 
     name: "Mother Theresa Hostel", 
-    lat: 12.192100, 
-    lng: 79.083300,
+    lat: 12.191600, 
+    lng: 79.082926,
     keywords: ["mother theresa hostel", "hostel", "girls hostel", "ladies hostel"]
   },
   temple: { 
     name: "Arunai Temple", 
-    lat: 12.192500, 
-    lng: 79.083800,
+    lat: 12.192394, 
+    lng: 79.082822,
     keywords: ["temple", "arunai temple", "prayer"]
   },
   guest: { 
     name: "Guest House", 
-    lat: 12.193500, 
-    lng: 79.083600,
+    lat: 12.192339, 
+    lng: 79.082307,
     keywords: ["guest house", "guest", "accommodation"]
   },
   mens: { 
     name: "Mens Hostel", 
-    lat: 12.192000, 
-    lng: 79.083000,
+    lat: 12.192641, 
+    lng: 79.082147,
     keywords: ["mens hostel", "boys hostel", "men hostel"]
   },
   openaudi: { 
     name: "Open Auditorium", 
-    lat: 12.192850, 
-    lng: 79.084000,
+    lat: 12.192992, 
+    lng: 79.082720,
     keywords: ["open auditorium", "outdoor auditorium", "open air"]
   },
   mess: { 
     name: "Boys Mess", 
-    lat: 12.192750, 
-    lng: 79.083500,
+    lat: 12.193069, 
+    lng: 79.082069,
     keywords: ["boys mess", "mess", "dining hall"]
   },
   mech: { 
     name: "Mechanical Dept", 
-    lat: 12.193180, 
-    lng: 79.084460,
+    lat: 12.193446, 
+    lng: 79.082622,
     keywords: ["mechanical", "mech", "mechanical department", "mechanical block"]
   },
   civil: { 
     name: "Civil Block", 
-    lat: 12.193200, 
-    lng: 79.084200,
+    lat: 12.193459, 
+    lng: 79.082442,
     keywords: ["civil", "civil block", "civil engineering"]
   },
   it: { 
     name: "IT Block", 
-    lat: 12.193100, 
-    lng: 79.083850,
+    lat: 12.193521, 
+    lng: 79.083236,
     keywords: ["it", "it block", "information technology"]
   },
   biotech: { 
@@ -151,6 +151,7 @@ export const buildings: Record<string, Building> = {
     keywords: ["security", "security block", "guard"]
   }
 };
+
 
 export const buildingsList = Object.entries(buildings).map(([key, building]) => ({
   key,
